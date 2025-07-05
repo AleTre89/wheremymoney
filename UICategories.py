@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 import tkinter.ttk as ttk
 import sqlite3
 
@@ -35,10 +36,10 @@ class Categories:
 
         self.cat_mask.mainloop()
 
-#TODO if cbx is empty error message - approvation before adding category
-#TODO cancel table column cod_cat
+#TODO create column active - True by default
+#TODO create gestione button to activate / deactivate categories
     def add_category(self):
-        """Add data from categories combobox to db tabel categories """
+        """Add data from categories combobox to db table categories"""
         con = sqlite3.connect('database/database.db')
         cur = con.cursor()
 
@@ -47,13 +48,22 @@ class Categories:
             id_cat = 0
         else:
             id_cat+=1
-
-        cod_cat = f"{self.cat_cbx.get()}_{id_cat}"
-
         category=self.cat_cbx.get()
 
+        category_list= [cat[0] for cat in cur.execute("SELECT category FROM categories").fetchall()]
 
-        cur.execute("INSERT INTO categories VALUES (?,?,?)", (id_cat,cod_cat,category))
-        con.commit()
-        con.close()
+        if category == "":
+            error_no_record = messagebox.showerror("Error: No category digited",
+                                                   "You didn't insert new category.\n"
+                                                           "Digit category in combobox.")
+        elif category in category_list:
+            error_already_exixst = messagebox.showerror("Error: Category already exists",
+                                                        "Category already exists")
+        else:
+            want_to_insert = messagebox.askokcancel("insert new category?",
+                                   f"Do you want to insert the category: {category}?",)
+            if want_to_insert:
+                cur.execute("INSERT INTO categories VALUES (?,?)", (id_cat,category))
+                con.commit()
+                con.close()
 
