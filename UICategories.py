@@ -1,4 +1,5 @@
 import tkinter as tk
+from os.path import exists
 from tkinter import messagebox
 import tkinter.ttk as ttk
 import sqlite3
@@ -19,7 +20,7 @@ class Categories:
 
         #buttons
         self.cat_button = tk.Button(self.cat_mask,text="Add Category",width=15,command=self.add_category)
-        self.subcat_button = tk.Button(self.cat_mask,text="Add SubCategory",width=15)
+        self.subcat_button = tk.Button(self.cat_mask,text="Add SubCategory",width=15, command=self.add_subcategory)
 
         #positioning
         self.cat_label.grid(row=0, column=0, padx=10, pady=10)
@@ -30,8 +31,15 @@ class Categories:
         self.subcat_cbx.grid(row=1, column=1, padx=10, pady=10)
         self.subcat_button.grid(row=1, column=2, padx=10, pady=10)
 
-        self.cat_tree = ttk.Treeview(self.cat_mask)
-        self.cat_tree.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+        #treeview
+        self.cat_tree = ttk.Treeview(self.cat_mask, columns="Category")
+        self.cat_tree.grid(row=2, column=0, columnspan=3, padx=10, pady=10)
+
+        self.cat_tree.column("#0",width=50,minwidth=0)
+        self.cat_tree.column("Category", width=300,minwidth=100)
+        self.cat_tree.heading("Category", text="Category")
+
+        self.populate_tree()
 
 
         self.cat_mask.mainloop()
@@ -67,3 +75,60 @@ class Categories:
                 con.commit()
                 con.close()
 
+        self.populate_tree()
+
+    def add_subcategory(self):
+        """Add data from subcategories combobox to db table sub_categories"""
+        con = sqlite3.connect('database/database.db')
+        cur = con.cursor()
+
+        id_subcat = cur.execute("SELECT MAX(id_subcat) FROM sub_categories").fetchone()[0]
+        if id_subcat == None:
+            id_subcat = 0
+        else:
+            id_subcat+=1
+        subcat=self.subcat_cbx.get()
+        category = self.cat_cbx.get()
+
+        subcat_list= [subcat[0] for subcat in cur.execute("SELECT subcategory FROM sub_categories").fetchall()]
+        category_list = [cat[0] for cat in cur.execute("SELECT category FROM categories").fetchall()]
+
+        id_cat = cur.execute(f"SELECT id_cat FROM categories WHERE category = '{category}'").fetchone()[0]
+
+        cod_subcat = f"{subcat}_{id_subcat}"
+
+        if subcat == "":
+            error_no_record = messagebox.showerror("Error: No subcategory digited",
+                                                   "You didn't insert new subcategory.\n"
+                                                           "Digit subcategory in combobox.")
+        elif subcat in subcat_list:
+            error_already_exixst = messagebox.showerror("Error: subcategory already exists",
+                                                        "subcategory already exists")
+        elif category == "" or category not in category_list:
+            error_category = messagebox.showerror("Error: category",
+                                                        "category empty or not exists")
+        else:
+            want_to_insert = messagebox.askokcancel("insert new subcategory?",
+                                   f"Do you want to insert the subcategory: {subcat}?",)
+            if want_to_insert:
+                cur.execute("INSERT INTO sub_categories VALUES (?,?,?,?)", (id_subcat,id_cat,cod_subcat,subcat))
+                con.commit()
+                con.close()
+
+        self.populate_tree()
+
+
+    def populate_tree(self):
+        con = sqlite3.connect('database/database.db')
+        cur = con.cursor()
+        category_list = [cat[0] for cat in cur.execute("SELECT category FROM categories").fetchall()]
+
+        count=0
+        for cat in category_list:
+            if self.cat_tree.exists(str(count)) ==1:
+                count+=1
+            else:
+                self.cat_tree.insert(parent='',index="end",id=count, values=cat)
+                count +=1
+        print(self.cat_tree.get_children())
+        # TODO insert subcategories in treeview
