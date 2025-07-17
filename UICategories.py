@@ -122,6 +122,7 @@ class Categories:
         con = sqlite3.connect('database/database.db')
         cur = con.cursor()
         category_list = [cat[0] for cat in cur.execute("SELECT category FROM categories").fetchall()]
+        subcat_list = [subcat[0] for subcat in cur.execute("SELECT subcategory FROM sub_categories").fetchall()]
 
         count=0
         for cat in category_list:
@@ -130,5 +131,20 @@ class Categories:
             else:
                 self.cat_tree.insert(parent='',index="end",id=count, values=cat)
                 count +=1
-        print(self.cat_tree.get_children())
-        # TODO insert subcategories in treeview
+
+        #TODO insert subcategories in treeview
+        for cat in self.cat_tree.get_children():
+            nome_cat = self.cat_tree.item(cat)["values"]
+            if len(nome_cat) == 2:
+                nome_cat = f"{nome_cat[0]} {nome_cat[1]}"
+            else:
+                nome_cat=nome_cat[0]
+            id_cat = cur.execute(f"SELECT id_cat FROM categories WHERE category='{nome_cat}'").fetchone()[0]
+
+
+
+
+        #TODO insert subcategories in treeview
+        self.cat_cbx.config(values=category_list)
+        #TODO insert subcat in cbx in relation to category
+        self.subcat_cbx.config(values=subcat_list)

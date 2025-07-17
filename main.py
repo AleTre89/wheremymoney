@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import sqlite3
 
+from UIArc_Imp import Archive
 from UICategories import Categories
 
 mask = tk.Tk()
@@ -29,6 +30,9 @@ def add_record():
 def goto_cat_mask():
     open_cat_mask = Categories()
 
+def goto_archive():
+    open_archive = Archive()
+
 
 #labels
 insert = tk.Label(mask, text="Insert manually")
@@ -48,8 +52,8 @@ subcategory_cbx = ttk.Combobox(mask, values=["Furniture","Maintenance"])
 
 #buttons
 add_button = tk.Button(mask, text="Add",command=add_record)
-import_button = tk.Button(mask, text="Import excel")
-archive_button = tk.Button(mask, text="Archive")
+import_button = tk.Button(mask, text="Import excel",command= goto_archive)
+archive_button = tk.Button(mask, text="Archive",command= goto_archive)
 categories_button = tk.Button(mask, text="Categories",command=goto_cat_mask)
 cat_matching_button = tk.Button(mask, text="Categories matching")
 
