@@ -39,10 +39,29 @@ class Categories:
         self.cat_tree.column("Category", width=300,minwidth=100)
         self.cat_tree.heading("Category", text="Category")
 
+        self.cat_cbx.bind('<<ComboboxSelected>>', self.get_subcat)
+
         self.populate_tree()
 
 
         self.cat_mask.mainloop()
+
+
+    def get_subcat(self,event):
+        self.subcat_cbx.delete(0, 'end')
+        cat_selected =self.cat_cbx.get()
+        con = sqlite3.connect('database/database.db')
+        cur = con.cursor()
+        selected_cat_list = cur.execute("SELECT categories.category, sub_categories.subcategory "
+             "FROM categories "
+             "LEFT JOIN sub_categories ON categories.id_cat=sub_categories.id_cat "
+                                        "WHERE categories.category=?", (cat_selected,)).fetchall()
+        subcat_list = [subcat[1] for subcat in selected_cat_list]
+
+        if subcat_list[0] != None:
+            self.subcat_cbx.config(values=subcat_list)
+        else:
+            self.subcat_cbx.config(values=[''])
 
 #TODO create column active - True by default
 #TODO create gestione button to activate / deactivate categories
@@ -51,7 +70,8 @@ class Categories:
         con = sqlite3.connect('database/database.db')
         cur = con.cursor()
 
-        id_cat = cur.execute("SELECT MAX(id_cat) FROM categories").fetchone()[0]
+        #TODO id_cat as str - number not in sequence
+        id_cat = int(cur.execute("SELECT MAX(id_cat) FROM categories").fetchone()[0])
         if id_cat == None:
             id_cat = 0
         else:
@@ -82,6 +102,7 @@ class Categories:
         con = sqlite3.connect('database/database.db')
         cur = con.cursor()
 
+        #TODO fix max value in integer type
         id_subcat = cur.execute("SELECT MAX(id_subcat) FROM sub_categories").fetchone()[0]
         if id_subcat == None:
             id_subcat = 0
@@ -122,29 +143,31 @@ class Categories:
         con = sqlite3.connect('database/database.db')
         cur = con.cursor()
         category_list = [cat[0] for cat in cur.execute("SELECT category FROM categories").fetchall()]
-        subcat_list = [subcat[0] for subcat in cur.execute("SELECT subcategory FROM sub_categories").fetchall()]
 
         count=0
         for cat in category_list:
             if self.cat_tree.exists(str(count)) ==1:
                 count+=1
             else:
-                self.cat_tree.insert(parent='',index="end",id=count, values=cat)
+                self.cat_tree.insert(parent='',index="end",id=count, values=(cat,))
                 count +=1
 
         #TODO insert subcategories in treeview
-        for cat in self.cat_tree.get_children():
-            nome_cat = self.cat_tree.item(cat)["values"]
-            if len(nome_cat) == 2:
-                nome_cat = f"{nome_cat[0]} {nome_cat[1]}"
-            else:
-                nome_cat=nome_cat[0]
-            id_cat = cur.execute(f"SELECT id_cat FROM categories WHERE category='{nome_cat}'").fetchone()[0]
+        complete_cat_list = cur.execute('SELECT categories.category, sub_categories.subcategory '
+             'FROM categories '
+             'LEFT JOIN sub_categories ON categories.id_cat=sub_categories.id_cat').fetchall()
 
+        n_sub=0
+        for cat in self.cat_tree.get_children():
+            nome_cat = self.cat_tree.item(cat)["values"][0]
+            for sub in complete_cat_list:
+                if sub[0] == nome_cat and sub[1]!=None:
+                    subcount = f"S{n_sub}"
+                    self.cat_tree.insert(parent=cat, index="end", id=subcount, values=(sub[1],))
+                    n_sub+=1
 
 
 
         #TODO insert subcategories in treeview
         self.cat_cbx.config(values=category_list)
         #TODO insert subcat in cbx in relation to category
-        self.subcat_cbx.config(values=subcat_list)
