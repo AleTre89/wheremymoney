@@ -7,7 +7,7 @@ class Archive:
     def __init__(self):
         self.arc_mask = tk.Toplevel()
         self.arc_mask.title("Archive")
-        self.arc_mask.geometry("1000x600")
+        self.arc_mask.geometry("1200x600")
 
         self.arc_tree = ttk.Treeview(self.arc_mask, columns=(
                                                 "Date",
@@ -43,7 +43,7 @@ class Archive:
         self.cat_cbx = ttk.Combobox(self.arc_mask,state='readonly')
         self.subcat_cbx = ttk.Combobox(self.arc_mask, state='readonly')
 
-        self.update_button = tk.Button(self.arc_mask,text='Update')
+        self.update_button = tk.Button(self.arc_mask,text='Update', command=self.update_item)
         self.upload_button = tk.Button(self.arc_mask,text='Upload')
         self.cat_match_button = tk.Button(self.arc_mask,text='Category Matching')
 
@@ -72,6 +72,22 @@ class Archive:
         self.cbx_filling()
 
         self.arc_mask.mainloop()
+
+    def update_item(self):
+        #TODO if cbx emtpy error
+        cat_value = self.cat_cbx.get()
+        subcat_value = self.subcat_cbx.get()
+
+
+        item=self.arc_tree.selection()[0]
+        date = self.arc_tree.item(item)['values'][0]
+        amount = self.arc_tree.item(item)['values'][1]
+        description = self.arc_tree.item(item)['values'][2]
+
+        self.arc_tree.item(item, values=(date,amount,description,cat_value,subcat_value))
+
+
+
 
     def get_descr(self,event):
         desc_text = self.arc_tree.selection()[0]
@@ -103,6 +119,8 @@ class Archive:
         else:
             self.subcat_cbx.config(values=[''])
 
+        con.close()
+
     # DATA CONTABILE
     # DATA VALUTA
     # CAUSALE
@@ -116,12 +134,27 @@ class Archive:
 
         count = 0
         for rec in range(0,tot_rec):
+            con = sqlite3.connect("database/database.db")
+            cur = con.cursor()
+
+            string_list = cur.execute("SELECT c.category,s.subcategory,m.string "
+                           "FROM matching AS m "
+                           "LEFT JOIN categories AS c ON c.id_cat = m.id_cat "
+                           "LEFT JOIN sub_categories AS s ON s.id_subcat = m.id_subcat").fetchall()
+            string_to_search = df_dict["DESCRIZIONE OPERAZIONE"][rec].upper()
+
+            for element in string_list:
+                if string_to_search.find(element[2]) >=0:
+                    cat_subcat_match = [element[0],element[1]]
+                else:
+                    cat_subcat_match = ['','']
+
 
             self.arc_tree.insert('',index="end",iid=count,values=(
                 df_dict["DATA CONTABILE"][rec],
                 df_dict["IMPORTO IN EURO"][rec],
                 df_dict["DESCRIZIONE OPERAZIONE"][rec],
-                "",
-                ""
+                cat_subcat_match[0],
+                cat_subcat_match[1]
             ))
             count+=1

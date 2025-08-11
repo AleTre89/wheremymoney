@@ -4,6 +4,7 @@ import sqlite3
 
 from UIArc_Imp import Archive
 from UICategories import Categories
+from UIMatching import Matching
 
 mask = tk.Tk()
 
@@ -33,6 +34,8 @@ def goto_cat_mask():
 def goto_archive():
     open_archive = Archive()
 
+def goto_match():
+    open_match = Matching()
 
 #labels
 insert = tk.Label(mask, text="Insert manually")
@@ -55,7 +58,7 @@ add_button = tk.Button(mask, text="Add",command=add_record)
 import_button = tk.Button(mask, text="Import excel",command= goto_archive)
 archive_button = tk.Button(mask, text="Archive",command= goto_archive)
 categories_button = tk.Button(mask, text="Categories",command=goto_cat_mask)
-cat_matching_button = tk.Button(mask, text="Categories matching")
+cat_matching_button = tk.Button(mask, text="Categories matching", command=goto_match)
 
 #posizionamento
 insert.grid(row=0, column =0,pady=20)

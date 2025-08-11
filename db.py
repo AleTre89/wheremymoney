@@ -9,6 +9,10 @@ cur = con.cursor()
 # cur.execute("CREATE TABLE matching(id_match,id_cat,id_subcat,string)")
 # cur.execute("CREATE TABLE record(id_record,id_cat,id_subcat,date,amount)")
 
-cur.execute('ALTER TABLE categories DROP COLUMN cod_cat')
+a=cur.execute('SELECT categories.category, sub_categories.subcategory '
+             'FROM categories '
+             'LEFT JOIN sub_categories ON categories.id_cat=sub_categories.id_cat')
+
+print(a.fetchall())
 con.commit()
 con.close()
