@@ -30,37 +30,28 @@ L'applicazione è in fase di sviluppo iniziale ma già funzionante nelle seguent
 ---
 
 ## ⚙️ Funzionalità implementate
-
 ✅ Interfaccia principale (main.py)
-Inserimento spesa manuale: data, importo, categoria e sotto-categoria.
-Accesso diretto a:
-
-Archivio movimenti (importazione Excel)
-
-Gestione categorie
-
-Gestione regole di matching
+-  Inserimento spesa manuale: data, importo, categoria e sotto-categoria.
+-  Accesso diretto a:
+    -  Archivio movimenti (importazione Excel)
+    -  Gestione categorie
+    -  Gestione regole di matching
 
 ✅ Archivio movimenti (UIArc_Imp.py)
-Importa i movimenti da elenco.xlsx e li visualizza in tabella.
-
-Assegnazione manuale di categorie e sotto-categorie.
-
-Visualizzazione descrizione operazione selezionata.
-
-Pre-matching automatico basato sulle regole salvate.
+-  Importa i movimenti da elenco.xlsx e li visualizza in tabella.
+-  Assegnazione manuale di categorie e sotto-categorie.
+-  Visualizzazione descrizione operazione selezionata.
+-  Pre-matching automatico basato sulle regole salvate.
 
 ✅ Gestione categorie (UICategories.py)
-Creazione categorie e sotto-categorie collegate.
-
-Controllo duplicati con messaggi di conferma.
-
-Visualizzazione in TreeView gerarchica (categorie → sotto-categorie).
+-  Creazione categorie e sotto-categorie collegate.
+-  Controllo duplicati con messaggi di conferma.
+-  Visualizzazione in TreeView gerarchica (categorie → sotto-categorie).
 
 ✅ Matching categorie (UIMatching.py)
-Creazione regole che associano una stringa di testo a una coppia categoria/sotto-categoria.
+-  Creazione regole che associano una stringa di testo a una coppia categoria/sotto-categoria.
+-  Visualizzazione e gestione regole esistenti.
 
-Visualizzazione e gestione regole esistenti.
 
 ---
 
@@ -71,7 +62,7 @@ Tabelle attualmente in uso:
 - `categories(id_cat, category)`
 - `sub_categories(id_subcat, id_cat, cod_subcat, subcategory)`
 - `record(id_record, date, amount, id_cat, id_subcat)`
-- *(Nota: tabelle come `matching` sono previste ma non ancora usate)*
+- `matching(id_match, id_cat, id_subcat, string)`
 
 ---
 
@@ -80,15 +71,12 @@ Tabelle attualmente in uso:
 - [ ] Importazione automatica da file Excel (`pandas`)
 - [ ] Collegamento dinamico di categorie e sotto-categorie nel form principale
 - [ ] Visualizzazione spese per periodo/categoria
-- [ ] Aggiunta campo "attivo" per disattivare categorie obsolete
-- [ ] Matching automatico categorie ↔ descrizione testuale
+- [ ] Aggiunta campo "attivo" per disattivare record obsoleti
 - [ ] Archiviazione record storici
 
 ---
 
 ## ▶️ Esecuzione
-
-Assicurati che la cartella `database/` contenga il file `database.db`, poi avvia l'app con:
-
-```bash
+Assicurati che la cartella database/ contenga il file database.db e che siano presenti i file di esempio (elenco.xlsx).
+Poi avvia l’applicazione con:
 python main.py
