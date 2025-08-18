@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import pandas as pd
 import sqlite3
+import datetime as dt
 
 class Archive:
     def __init__(self):
@@ -44,7 +45,7 @@ class Archive:
         self.subcat_cbx = ttk.Combobox(self.arc_mask, state='readonly')
 
         self.update_button = tk.Button(self.arc_mask,text='Update', command=self.update_item)
-        self.upload_button = tk.Button(self.arc_mask,text='Upload')
+        self.upload_button = tk.Button(self.arc_mask,text='Upload', command=self.upload_to_db)
         self.cat_match_button = tk.Button(self.arc_mask,text='Category Matching')
 
         self.arc_tree.grid(row=1,column=0,padx=10,pady=10,rowspan=7)
@@ -72,6 +73,49 @@ class Archive:
         self.cbx_filling()
 
         self.arc_mask.mainloop()
+
+    def upload_to_db(self):
+        tot_rec = self.arc_tree.get_children()
+
+        for c in tot_rec:
+            con = sqlite3.connect('database/database.db')
+            cur = con.cursor()
+            max_id = cur.execute('SELECT MAX(id_record) FROM record').fetchone()[0]
+            if max_id is None:
+                id_record = 0
+            else:
+                id_record = max_id + 1
+
+            values_import = self.arc_tree.item(c)['values']
+            #id_cat
+            cat_name = values_import[3]
+            try:
+                id_cat = cur.execute('SELECT id_cat FROM categories WHERE category = ?',
+                                    (cat_name,)).fetchone()[0]
+            except TypeError:
+                id_cat=1000
+
+            #id_subcat
+            subcat_name = values_import[4]
+            try:
+                id_subcat = cur.execute('SELECT id_subcat FROM sub_categories WHERE subcategory = ?',
+                                 (subcat_name,)).fetchone()[0]
+            except TypeError:
+                id_subcat =1000
+
+            #date
+            date_full = values_import[0]
+            date = dt.datetime.strptime(date_full,'%Y-%m-%d %H:%M:%S')
+            date_to_insert = dt.datetime.strftime(date,'%Y-%m-%d')
+
+            #amount
+            amount = values_import[1]
+
+
+            cur.execute('INSERT INTO record VALUES (?,?,?,?,?)',
+                        (id_record,id_cat,id_subcat,date_to_insert,amount))
+            con.commit()
+            con.close()
 
     def update_item(self):
         #TODO if cbx emtpy error
